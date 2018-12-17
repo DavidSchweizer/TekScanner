@@ -31,35 +31,6 @@ namespace TekScanner
             InitializeComponent();
         }
 
-//        Double.TryParse(textBox1.Text, out cannyThreshold);
-//                Double.TryParse(textBox2.Text, out cannyThresholdLinking);
-//        int threshold = 20;
-//        Int32.TryParse(textBox3.Text, out threshold);
-//                double minLineWidth = 30;
-//        Double.TryParse(textBox4.Text, out minLineWidth);
-//                double gap = 10;
-//        Double.TryParse(textBox5.Text, out gap);
-//                        lineImage = imgOriginal.CopyBlank();
-//            foreach (LineSegment2D line in Lines)
-//                lineImage.Draw(line, new Bgr(Color.LightGreen), 2);
-//            pbLines.Image = lineImage.Bitmap;
-//                        Image<Bgr, Byte> image3 = imgOriginal.CopyBlank();
-
-//            foreach (OCVCombinedLinesData line in grid.HorizontalLines)
-//            {
-//                OCVLineData summ = line.GetSummaryLine();
-//        image3.Draw(summ.Line, new Bgr(Color.Azure), 2);
-//            }
-//            foreach (OCVCombinedLinesData line in grid.VerticalLines)
-//            {
-//                OCVLineData summ = line.GetSummaryLine();
-//                if (summ.Length > 35)
-//                    image3.Draw(summ.Line, new Bgr(Color.LightPink), 2);
-//            }
-//
-
-
-
         private void LoadFile(string filename)
         {
             imgOriginal = new Image<Bgr, Byte>(filename);
