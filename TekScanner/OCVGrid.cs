@@ -380,14 +380,6 @@ namespace TekScanner
                 line.Dump(sw);
             }
         }
-        //public void RemoveSmallLines(double threshold)
-        //{
-        //    int i = 0;
-        //    while (i < Lines.Count)
-        //        if (Lines[i].Length > threshold)
-        //            i++;
-        //        else RemoveLine(Lines[i]);
-        //}
     }
 
     class OCVHorizontalLineDataSorter : IComparer<OCVLineData>

@@ -18,42 +18,22 @@ namespace TekScanner
         const int EXTERNALBORDER = 101;
         public bool[,] TopAreaBorders;
         public bool[,] LeftAreaBorders;
+        private int MatrixTreshold, HorizontalThreshold, VerticalTreshold;
+        private int[,] LeftBorderValues;
+        private int[,] TopBorderValues;
         public int Rows { get { return TopAreaBorders.GetLength(0); } }
         public int Cols { get { return TopAreaBorders.GetLength(1); } }
         public TekBorderAnalyzer(UMat matGray, OCVGridDefinition gridDef)
         {
             int testWidth = 10;
-            int threshold;
-            int[,] LeftBorderValues;
-            int[,] TopBorderValues;
 
             Matrix<Byte> matrix = new Matrix<Byte>(matGray.Rows, matGray.Cols, matGray.NumberOfChannels);
             matGray.CopyTo(matrix);
-            threshold = FindThresholdAndWidth(matrix, gridDef, out testWidth);
-            LeftBorderValues = FindRowValues(matrix, gridDef, testWidth, threshold);
-            TopBorderValues = FindColValues(matrix, gridDef, testWidth, threshold);
-            using (StreamWriter sw = new StreamWriter("bordjes.log"))
-            {
-                sw.WriteLine("analyzing (threshold value {0})", threshold);
-                LeftAreaBorders = AnalyzeBorderValues(LeftBorderValues, ref threshold);
-                sw.WriteLine("Left Area Border values (threshold pct {0}):", threshold);
-                for (int r = 0; r < LeftAreaBorders.GetLength(0); r++)
-                {
-                    sw.Write("row {0}:", r);
-                    for (int c = 0; c < LeftAreaBorders.GetLength(1); c++)
-                        sw.Write("{0}{1}  ", LeftBorderValues[r, c], LeftAreaBorders[r, c] ? "L" : " ");
-                    sw.WriteLine();
-                }
-                TopAreaBorders = AnalyzeBorderValues(TopBorderValues, ref threshold);
-                sw.WriteLine("Top Area Border values (threshold pct {0}):", threshold);
-                for (int r = 0; r < TopAreaBorders.GetLength(0); r++)
-                {
-                    sw.Write("row {0}:", r);
-                    for (int c = 0; c < TopAreaBorders.GetLength(1); c++)
-                        sw.Write("{0}{1}  ", TopBorderValues[r, c], TopAreaBorders[r, c] ? "T" : " ");
-                    sw.WriteLine();
-                }
-            }
+            MatrixTreshold = FindThresholdAndWidth(matrix, gridDef, out testWidth);
+            LeftBorderValues = FindRowValues(matrix, gridDef, testWidth, MatrixTreshold);
+            TopBorderValues  = FindColValues(matrix, gridDef, testWidth, MatrixTreshold);
+            LeftAreaBorders = AnalyzeBorderValues(LeftBorderValues, ref HorizontalThreshold);
+            TopAreaBorders = AnalyzeBorderValues(TopBorderValues, ref VerticalTreshold);
         }
 
         private int FindThresholdAndWidth(Matrix<byte> matrix, OCVGridDefinition gridDef, out int testWidth)
@@ -219,6 +199,24 @@ namespace TekScanner
         }
         public void Dump(StreamWriter sw)
         {
+            sw.WriteLine("analyzing (threshold value {0})", MatrixTreshold);
+            sw.WriteLine("Left Area Border values (threshold pct {0}):", HorizontalThreshold);
+            for (int r = 0; r < LeftAreaBorders.GetLength(0); r++)
+            {
+                sw.Write("row {0}:", r);
+                for (int c = 0; c < LeftAreaBorders.GetLength(1); c++)
+                    sw.Write("{0}{1}  ", LeftBorderValues[r, c], LeftAreaBorders[r, c] ? "L" : " ");
+                sw.WriteLine();
+            }
+            sw.WriteLine("Top Area Border values (threshold pct {0}):", VerticalTreshold);
+            for (int r = 0; r < TopAreaBorders.GetLength(0); r++)
+            {
+                sw.Write("row {0}:", r);
+                for (int c = 0; c < TopAreaBorders.GetLength(1); c++)
+                    sw.Write("{0}{1}  ", TopBorderValues[r, c], TopAreaBorders[r, c] ? "T" : " ");
+                sw.WriteLine();
+            }
+            sw.WriteLine("Resultant matrix:");
             for (int r = 0; r < Rows; r++)
             {
                 for (int l = 0; l < 2; l++)

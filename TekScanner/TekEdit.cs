@@ -21,23 +21,6 @@ namespace Tek1
             TekFieldView.IgnoreInitial = true;
             StandardAreas = new TekStandardAreas();
             TemplateAreas = StandardAreas.TemplateAreas();
-            //using (StreamWriter sw = new StreamWriter("areas.log"))
-            //{
-            //    int LastTemplate = -1;
-            //    for (int i = 0; i < StandardAreas.Count; i++)
-            //    {
-            //        TekAreaDef area = StandardAreas.GetValue(i);
-            //        if (area.TemplateArea)
-            //        {
-            //            sw.WriteLine("TEMPLATE area {0} --- {1}:", i, area.Description);
-            //            LastTemplate = i;
-            //        }
-            //        else
-            //            sw.WriteLine("---{0} ({1}) --- {2}:", i, LastTemplate, area.Description);
-            //        area.DumpAsAsciiArt(sw);
-            //        //area.Dump(sw);
-            //    }
-            //}
         }
 
         public void ResetBoard()
