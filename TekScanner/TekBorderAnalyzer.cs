@@ -15,11 +15,10 @@ namespace TekScanner
 {
     class TekBorderAnalyzer
     {
-        const int EXTERNALBORDER = 101;
+        const int EXTERNALBORDER = -114;
         public bool[,] TopAreaBorders;
         public bool[,] LeftAreaBorders;
-        private int MatrixTreshold, HorizontalThreshold, VerticalTreshold;
-        private int[,] RowRanges;
+        private int HorizontalThreshold, VerticalTreshold;
         private int[,] LeftBorderValues;
         private int[,] TopBorderValues;
         public int Rows { get { return TopAreaBorders.GetLength(0); } }
