@@ -19,73 +19,25 @@ namespace TekScanner
         public bool[,] TopAreaBorders;
         public bool[,] LeftAreaBorders;
         private int MatrixTreshold, HorizontalThreshold, VerticalTreshold;
+        private int[,] RowRanges;
         private int[,] LeftBorderValues;
         private int[,] TopBorderValues;
         public int Rows { get { return TopAreaBorders.GetLength(0); } }
         public int Cols { get { return TopAreaBorders.GetLength(1); } }
         public TekBorderAnalyzer(UMat matGray, OCVGridDefinition gridDef)
         {
-            int testWidth = 10;
-
             Matrix<Byte> matrix = new Matrix<Byte>(matGray.Rows, matGray.Cols, matGray.NumberOfChannels);
             matGray.CopyTo(matrix);
-            MatrixTreshold = FindThresholdAndWidth(matrix, gridDef, out testWidth);
-            LeftBorderValues = FindRowValues(matrix, gridDef, testWidth, MatrixTreshold);
-            TopBorderValues  = FindColValues(matrix, gridDef, testWidth, MatrixTreshold);
+            LeftBorderValues = FindRowValues(matrix, gridDef, (int)(gridDef.ColSize * 0.1));
+            TopBorderValues  = FindColValues(matrix, gridDef, (int)(gridDef.RowSize * 0.1));
             LeftAreaBorders = AnalyzeBorderValues(LeftBorderValues, ref HorizontalThreshold);
             TopAreaBorders = AnalyzeBorderValues(TopBorderValues, ref VerticalTreshold);
         }
 
-        private int FindThresholdAndWidth(Matrix<byte> matrix, OCVGridDefinition gridDef, out int testWidth)
-        {
-            const int MAXBIN = 10;
-            double[] minValues = new double[1];
-            double[] maxValues = new double[1];
-            Point[] minLocations = new Point[1];
-            Point[] maxLocations = new Point[1];
-            testWidth = (int)(gridDef.ColSize * 0.1);
-            int[] binLimits;
-            int[] frequencyDistribution = FrequencyDistribution(matrix, MAXBIN, out binLimits);
-            int i = MAXBIN;
-            int maxi = i;
-            while (--i >= 0)
-            {
-                if (frequencyDistribution[i] > frequencyDistribution[maxi])
-                    maxi = i;
-            }
-            if (maxi > 0)
-                return binLimits[maxi - 1];
-            else
-                return binLimits[0];
-        }
-
-        private int[] FrequencyDistribution(Matrix<byte> matrix, int nBins, out int[] binLimits)
-        {
-            int[] result = new int[nBins + 1];
-            binLimits = new int[nBins + 1];
-            for (int i = 0; i < nBins; i++)
-                binLimits[i] = (i + 1) * (255 / nBins);
-            binLimits[nBins] = 255;
-            for (int r = 0; r < matrix.Rows; r++)
-            { 
-                for (int c = 0; c < matrix.Cols; c++)
-                {
-                    int i = 0;
-                    while (i <= nBins)
-                        if (matrix.Data[r, c] <= binLimits[i])
-                        {
-                            result[i]++;
-                            break;
-                        }
-                        else i++;
-                }
-            }
-            return result;
-        }
-
-        private int[,] FindRowValues(Matrix<byte> matrix, OCVGridDefinition gridDef, int testWidth, int threshold)
+        private int[,] FindRowValues(Matrix<byte> matrix, OCVGridDefinition gridDef, int testWidth)
         {
             int[,] result = new int[gridDef.Rows, gridDef.Cols];
+            int minVal, maxVal;
             for (int r = 0; r < gridDef.Rows; r++)
             {
                 int rowLoc = (int)(gridDef.RowLocation(r) + gridDef.RowSize * 0.5);
@@ -93,24 +45,27 @@ namespace TekScanner
                 {
                     result[r, 0] = EXTERNALBORDER;
                     int loc = gridDef.ColLocation(c);
-                    int nBelow = 0;
+                    minVal = Int32.MaxValue;
+                    maxVal = Int32.MinValue;
                     for (int col = loc - testWidth; col < loc + testWidth; col++)
                     {
                         if (col < 0 || col >= matrix.Cols)
                             continue;
                         byte value = matrix.Data[rowLoc, col];
-                        if (value < threshold)
-                            nBelow++;
+                        if (value < minVal)
+                            minVal = value;
+                        if (value > maxVal)
+                            maxVal = value;
                     }
-                    result[r, c] = (int)(100 * (nBelow / (2.0 * testWidth)));
+                    result[r, c] = maxVal - minVal;
                 }
             }
             return result;
         }
-        private int[,] FindColValues(Matrix<byte> matrix, OCVGridDefinition gridDef, int testWidth, int threshold)
+        private int[,] FindColValues(Matrix<byte> matrix, OCVGridDefinition gridDef, int testWidth)
         {
             int[,] result = new int[gridDef.Rows, gridDef.Cols];
-
+            int minVal, maxVal;
             for (int c = 0; c < gridDef.Cols; c++)
             {
                 int colLoc = (int)(gridDef.ColLocation(c) + gridDef.ColSize * 0.5);
@@ -118,18 +73,21 @@ namespace TekScanner
                 for (int r = 1; r < gridDef.Rows; r++)
                 {
                     int loc = gridDef.RowLocation(r);
-                    int nBelow = 0;
+                    minVal = Int32.MaxValue;
+                    maxVal = Int32.MinValue;
                     for (int row = loc - testWidth; row < loc + testWidth; row++)
                     {
                         if (row < 0 || row >= matrix.Rows)
                             continue;
                         byte value = matrix.Data[row, colLoc];
-                        if (value < threshold)
-                            nBelow++;
+                        if (value < minVal)
+                            minVal = value;
+                        if (value > maxVal)
+                            maxVal = value;                     
                     }
-                    result[r, c] = (int)(100 * (nBelow / (2.0 * testWidth)));
+                    result[r, c] = maxVal - minVal;                        
                 }
-            }
+            }            
             return result;
         }
 
@@ -199,7 +157,6 @@ namespace TekScanner
         }
         public void Dump(StreamWriter sw)
         {
-            sw.WriteLine("analyzing (threshold value {0})", MatrixTreshold);
             sw.WriteLine("Left Area Border values (threshold pct {0}):", HorizontalThreshold);
             for (int r = 0; r < LeftAreaBorders.GetLength(0); r++)
             {
