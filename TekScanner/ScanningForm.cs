@@ -22,7 +22,7 @@ namespace TekScanner
 
         Image<Bgr, Byte> imgOriginal;
         Image<Bgr, Byte> lineImage;
-
+        string OriginalFileName;
 
         TekGridAnalyzer GridAnalyzer;
 
@@ -35,6 +35,7 @@ namespace TekScanner
         {
             imgOriginal = new Image<Bgr, Byte>(filename);
             pbOriginal.Image = imgOriginal.ToBitmap();
+            OriginalFileName = filename;
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
@@ -160,8 +161,9 @@ namespace TekScanner
             TekBoardParser parser = new TekBoardParser();
 
             HeurSolvForm solvForm = new HeurSolvForm();
-            parser.Export(BoardAnalyzer.Board, "export.tx");
-            solvForm.DoLoad("export.tx");
+            string tekfilename = Path.ChangeExtension(OriginalFileName, ".TX");
+            parser.Export(BoardAnalyzer.Board, tekfilename);
+            solvForm.DoLoad(tekfilename);
             tabControl1.SelectedTab = tbOriginal;
             solvForm.ShowDialog();
         
