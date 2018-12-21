@@ -16,6 +16,7 @@ namespace TekScanner
     public partial class GridSizeForm : Form
     {
         public OCVGridDefinition GridDef;
+        public TekGridAnalyzer GridAnalyzer;
         private Image<Bgr, Byte> imageCopy;
         private Image<Bgr, Byte> imageOriginal;
 
@@ -43,6 +44,7 @@ namespace TekScanner
         {
             DrawGrid(imageCopy, GridDef, new Bgr(Color.Purple));
             pbGrid.Image = imageCopy.Bitmap;
+            ShowDeltas();
         }
 
         private void DrawGrid(Image<Bgr, Byte> image, OCVGridDefinition gridDef, Bgr color)
@@ -80,6 +82,14 @@ namespace TekScanner
             return new OCVGridDefinition(GridDef);
         }
 
+        private void ShowDeltas()
+        {
+            if (GridAnalyzer != null)
+            {
+                textBox1.Text = String.Format("rows: {0}", GridAnalyzer.Grid.DeltaRows(GridDef));
+                textBox2.Text = String.Format("cols: {0}", GridAnalyzer.Grid.DeltaCols(GridDef));
+            }
+        }
         private void Redraw()
         {
             if (cbShowGrid.Checked)
@@ -87,8 +97,7 @@ namespace TekScanner
                 imageCopy = imageOriginal.Clone();
                 DrawGrid();
             }
-
-        }
+       }
         private void nudRows_ValueChanged(object sender, EventArgs e)
         {
             GridDef.Rows = (int)nudRows.Value;
@@ -99,6 +108,16 @@ namespace TekScanner
         {
             GridDef.Cols = (int)nudCols.Value;
             Redraw();
+        }
+
+        private void bSave_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

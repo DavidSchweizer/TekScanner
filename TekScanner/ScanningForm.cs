@@ -94,6 +94,7 @@ namespace TekScanner
 
             using (GridSizeForm gridForm = new GridSizeForm())
             {
+                gridForm.GridAnalyzer = GridAnalyzer;
                 gridForm.LoadImage(imgOriginal);
                 gridForm.SetGridDef(GridAnalyzer.gridDef);
                 if (gridForm.ShowDialog() == DialogResult.OK)

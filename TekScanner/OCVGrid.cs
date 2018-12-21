@@ -56,7 +56,7 @@ namespace TekScanner
         }
     }
 
-    class OCVGrid
+    public class OCVGrid
     {
         public List<OCVCombinedLinesData> HorizontalLines;
         public List<OCVCombinedLinesData> VerticalLines;
@@ -132,43 +132,99 @@ namespace TekScanner
                                                             );
             return result;
         }
-        public double Delta(OCVGridData data, OCVGridDefinition grid)
+
+        public double DeltaRows(OCVGridDefinition grid)
         {
             double result = 0;
-            int row = 0;
-            foreach (OCVLineData line in data.HorizontalLines)
+            for (int r = 0; r < grid.Rows; r++)
             {
-                if (row < grid.Rows)
-                {
-                    result += Math.Abs(line.GetLocation() - grid.RowLocation(row));
-                    row++;
-                }
-                else
-                    result += Math.Abs(line.GetLocation() - grid.RowLocation(grid.Rows-1));
+                int location = grid.RowLocation(r);
+                int line0 = 0;
+                int line1 = HorizontalLines.Count - 1;
+                while (line0 < line1 - 1 && HorizontalLines[line0 + 1].GetSummaryLine().GetLocation() < location)
+                    line0++;
+                while (line1 > line0 + 1 && (line1 == HorizontalLines.Count-1 || HorizontalLines[line1 + 1].GetSummaryLine().GetLocation() > location))
+                    line1--;
+                result += Math.Min(Math.Abs(location - HorizontalLines[line0].GetSummaryLine().GetLocation()), 
+                                   Math.Abs(location - HorizontalLines[line1].GetSummaryLine().GetLocation()));
             }
-            int col = 0;
-            foreach (OCVLineData line in data.VerticalLines)
+            return result / grid.Rows;
+        }
+        public double DeltaCols(OCVGridDefinition grid)
+        {
+            double result = 0;
+            using (StreamWriter sw = new StreamWriter("deltas.log"))
             {
-                if (col < grid.Cols)
+                for (int c = 0; c < grid.Cols; c++)
                 {
-                    result += Math.Abs(line.GetLocation() - grid.ColLocation(col));
-                    row++;
+                    int location = grid.ColLocation(c);
+                    sw.Write("c: {0}  location: {1} ", c, location);
+                    int line0 = 0;
+                    int line1 = VerticalLines.Count - 1;
+                    while (line0 < line1 - 1 && VerticalLines[line0 + 1].GetSummaryLine().GetLocation() < location)
+                        line0++;
+                    while (line1 > line0 + 1 && (line1 == VerticalLines.Count - 1 || VerticalLines[line1 + 1].GetSummaryLine().GetLocation() > location))
+                        line1--;
+                    sw.Write(" line0: {0} [{1}]  line1: {2} [{3}] ", line0, VerticalLines[line0].GetSummaryLine().GetLocation(), line1, VerticalLines[line1].GetSummaryLine().GetLocation());
+                    double delt = Math.Min(Math.Abs(location - VerticalLines[line0].GetSummaryLine().GetLocation()),
+                                       Math.Abs(location - VerticalLines[line1].GetSummaryLine().GetLocation()));
+                    sw.WriteLine("  delta = {0} ", delt);
+                    result += delt;
                 }
-                else
-                    result += Math.Abs(line.GetLocation() - grid.ColLocation(grid.Cols - 1));
             }
-            return result / (grid.Rows + grid.Cols);
+            return result / grid.Cols;
+        }
+        public OCVGridDefinition AnalyzeOptimal(OCVGridDefinition gridDef)
+        {
+            double deltaRows = DeltaRows(gridDef);
+            int minRows = gridDef.Rows;
+            if (deltaRows > 1)
+            {
+                double minVal = deltaRows;
+                OCVGridDefinition temp = new OCVGridDefinition(gridDef);
+                for (int r = gridDef.Rows - 3; r < 3 * gridDef.Rows; r++)
+                {
+                    temp.Rows = r;
+                    double tempVal = DeltaRows(temp);
+                    if (tempVal < minVal)
+                    {
+                        minVal = tempVal;
+                        minRows = r;
+                    }
+                }
+            }
+            double deltaCols = DeltaCols(gridDef);
+            int minCols = gridDef.Cols;
+            if (deltaCols > 1)
+            {
+                double minVal = deltaCols;
+                OCVGridDefinition temp = new OCVGridDefinition(gridDef);
+                for (int c = gridDef.Cols - 3; c < 3 * gridDef.Cols; c++)
+                {
+                    temp.Cols = c;
+                    double tempVal = DeltaCols(temp);
+                    if (tempVal < minVal)
+                    {
+                        minVal = tempVal;
+                        minCols = c;
+                    }
+                }
+            }
+            OCVGridDefinition result = new OCVGridDefinition(gridDef);
+            result.Rows = minRows;
+            result.Cols = minCols;
+            return result;
         }
         public OCVGridDefinition Analyze()
         {
             OCVGridDefinition tempResult = Analyze(20);
             if (tempResult.Rows > 0 && tempResult.Cols > 0)
             {
-                double rowsize = tempResult.Width / (tempResult.Rows + 1);
-                double colsize = tempResult.Width / (tempResult.Cols + 1);
-                RemoveInconsistentLines(HorizontalLines, colsize, 0.45);
-                RemoveInconsistentLines(VerticalLines, rowsize, 0.45);
-                return Analyze(((rowsize > colsize) ? rowsize : colsize) - 5);
+                 double rowsize = tempResult.Width / (tempResult.Rows + 1);
+                 double colsize = tempResult.Width / (tempResult.Cols + 1);
+                 RemoveInconsistentLines(HorizontalLines, colsize, 0.45);
+                 RemoveInconsistentLines(VerticalLines, rowsize, 0.45);
+                 return AnalyzeOptimal(Analyze(((rowsize > colsize) ? rowsize : colsize) - 5));
             }
             return null;
         }

@@ -39,6 +39,8 @@
             this.pbGrid = new System.Windows.Forms.PictureBox();
             this.bSave = new System.Windows.Forms.Button();
             this.bCancel = new System.Windows.Forms.Button();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.textBox2 = new System.Windows.Forms.TextBox();
             this.gbSize.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudCols)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudRows)).BeginInit();
@@ -146,6 +148,7 @@
             this.bSave.TabIndex = 25;
             this.bSave.Text = "Save";
             this.bSave.UseVisualStyleBackColor = true;
+            this.bSave.Click += new System.EventHandler(this.bSave_Click);
             // 
             // bCancel
             // 
@@ -157,11 +160,28 @@
             this.bCancel.Text = "Cancel";
             this.bCancel.UseVisualStyleBackColor = true;
             // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(494, 250);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(117, 26);
+            this.textBox1.TabIndex = 27;
+            // 
+            // textBox2
+            // 
+            this.textBox2.Location = new System.Drawing.Point(494, 282);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(117, 26);
+            this.textBox2.TabIndex = 28;
+            this.textBox2.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
+            // 
             // GridSizeForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(650, 450);
+            this.Controls.Add(this.textBox2);
+            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.bCancel);
             this.Controls.Add(this.bSave);
             this.Controls.Add(this.gbSize);
@@ -194,5 +214,7 @@
         private System.Windows.Forms.PictureBox pbGrid;
         private System.Windows.Forms.Button bSave;
         private System.Windows.Forms.Button bCancel;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox textBox2;
     }
 }

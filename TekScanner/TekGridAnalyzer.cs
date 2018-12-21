@@ -11,7 +11,7 @@ using Emgu.CV.Structure;
 
 namespace TekScanner
 {
-    class TekGridAnalyzer
+    public class TekGridAnalyzer
     {
         public UMat matGrayScaleImage;
         public UMat cannyEdges;
